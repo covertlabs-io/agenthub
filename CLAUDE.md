@@ -45,6 +45,7 @@ Before deep work, identify which role you are filling and read the matching skil
    - `.cursor/skills/agenthub-pentest-a08-integrity-failures/SKILL.md`
    - `.cursor/skills/agenthub-pentest-a09-logging-monitoring/SKILL.md`
    - `.cursor/skills/agenthub-pentest-a10-ssrf/SKILL.md`
+   - If browser/UI validation matters, also read `.cursor/skills/agenthub-pentest-browser-validation/SKILL.md`
 5. Build a target map before making strong claims.
 
 ## Native CLI integration files
@@ -55,6 +56,14 @@ Project-scoped integration for agent CLIs lives here:
 - Claude Code: `.claude/settings.json` plus this `CLAUDE.md`
 
 The pentest bootstrap flow also generates per-agent local overrides and launcher scripts for both tools inside the bootstrap output directory.
+
+## Browser validation tooling
+
+When the target has browser-only behavior or a meaningful web UI:
+
+- read `.cursor/skills/agenthub-pentest-browser-validation/SKILL.md`
+- consult the bootstrap-generated `integrations/browser/AGENT_BROWSER.md`
+- use Vercel's `agent-browser` for narrow, evidence-focused browser validation when HTTP-only reasoning is not enough
 
 ## What "good work" looks like
 

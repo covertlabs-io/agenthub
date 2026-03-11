@@ -3,6 +3,9 @@
   "permissions": {
     "allow": [
       "Bash(ah *)",
+      "Bash(agent-browser *)",
+      "Bash(npx agent-browser *)",
+      "Bash(npx skills add vercel-labs/agent-browser*)",
       "Bash(git status)",
       "Bash(git diff *)",
       "Bash(git add *)",

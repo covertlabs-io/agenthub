@@ -50,6 +50,10 @@ Read the relevant skill before you go deep:
 - `.cursor/skills/agenthub-pentest-a09-logging-monitoring/SKILL.md`
 - `.cursor/skills/agenthub-pentest-a10-ssrf/SKILL.md`
 
+Cross-cutting browser skill:
+
+- `.cursor/skills/agenthub-pentest-browser-validation/SKILL.md`
+
 Those files are written to keep specialists focused on:
 
 - high-value review surfaces
@@ -65,6 +69,14 @@ When running agent CLIs directly in this repository:
 - Claude Code can use `.claude/settings.json` plus `CLAUDE.md`
 
 The pentest bootstrap flow also generates per-agent local override files and launcher scripts for both tools in the bootstrap output directory.
+
+## Browser validation tooling
+
+When the target has a web UI or browser-only behavior:
+
+- read `.cursor/skills/agenthub-pentest-browser-validation/SKILL.md`
+- use the bootstrap-generated `integrations/browser/AGENT_BROWSER.md`
+- prefer Vercel's `agent-browser` plus its `agent-browser` skill for narrow UI validation and screenshot-backed evidence
 
 ## Board discipline
 

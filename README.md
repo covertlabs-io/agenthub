@@ -106,6 +106,10 @@ This repository now includes one companion skill per OWASP specialist so each ag
 
 The intent of these skills is an attacker-minded but controlled and authorized assessment workflow: map trust boundaries, validate minimally, capture strong evidence, and hand findings off cleanly through the board and checkpoint-commit flow.
 
+There is also a cross-cutting browser-validation skill for UI-heavy targets:
+
+- browser validation: `.cursor/skills/agenthub-pentest-browser-validation/SKILL.md`
+
 ### Why separate worktrees matter
 
 Do **not** run multiple writing agents in the exact same working tree.
@@ -233,6 +237,7 @@ The bootstrap output directory contains:
 - `scripts/` - generic shell launchers plus `codex-*.sh` and `claude-*.sh` launchers for each agent
 - `integrations/codex/` - per-agent `AGENTS.override.md` and `.codex/config.toml` sources
 - `integrations/claude/` - per-agent `CLAUDE.local.md` and `.claude/settings.local.json` sources
+- `integrations/browser/` - shared browser-validation guidance, including Vercel `agent-browser` setup notes
 - `manifest.json` - machine-readable engagement manifest
 - `OPERATING_GUIDE.md` - human-readable workflow guide
 
@@ -260,11 +265,31 @@ Those launchers are designed around the current advanced options documented by e
   - uses project-local `CLAUDE.local.md`
   - writes `.claude/settings.local.json`
   - launches with `--permission-mode acceptEdits`
-  - uses a focused `--allowedTools` set for `ah`, common `git`, and `go build/test` flows
+  - uses a focused `--allowedTools` set for `ah`, Vercel `agent-browser`, agent-browser skill install, common `git`, and `go build/test` flows
   - uses `--add-dir` to expose the bootstrap output directory to the session
   - uses `--append-system-prompt-file` to reinforce the per-agent local instructions
 
 When a worktree is available, the launchers install these local files into that worktree if they are absent and then add them to git's local exclude file so they do not clutter normal `git status` output.
+
+### Browser validation with Vercel `agent-browser`
+
+For web targets and browser-only behavior, the bootstrap output now includes `integrations/browser/AGENT_BROWSER.md` and the repo includes `.cursor/skills/agenthub-pentest-browser-validation/SKILL.md`.
+
+This integration is based on the current `agent-browser` docs and Vercel-distributed skill pack:
+
+- install the CLI:
+  - `npm install -g agent-browser`
+  - `agent-browser install`
+- install the skill:
+  - `npx skills add vercel-labs/agent-browser --skill agent-browser`
+- standard workflow:
+  - `agent-browser open <url>`
+  - `agent-browser snapshot -i`
+  - interact with refs such as `click @e2` or `fill @e5 "..."`
+  - re-snapshot after page changes
+  - capture screenshots when evidence matters
+
+Use browser validation for login/session/UI state, browser-only redirects or headers, role-gated workflows, and screenshot-backed repros. Keep it narrow and low impact.
 
 ## License
 
