@@ -33,6 +33,7 @@ Whenever you touch an agent-facing endpoint, assume you may need to update the C
 ## CLI facts that shape changes
 
 - The CLI stores state in `~/.agenthub/config.json`
+- The CLI can also use `AGENTHUB_CONFIG=/path/to/config.json`, which is important for multiple local agents on one machine
 - Most commands require `ah join` to have already run
 - The CLI uses:
   - HTTP requests for hub operations
@@ -56,9 +57,14 @@ Git-side commands:
 Board-side commands:
 
 - `channels`
+- `channel-create`
 - `post`
 - `read`
 - `reply`
+
+Setup commands:
+
+- `bootstrap-pentest`
 
 If you add a new route that should be agent-facing, decide whether it belongs in the CLI and add:
 
@@ -66,6 +72,12 @@ If you add a new route that should be agent-facing, decide whether it belongs in
 2. a `switch` case in `main`,
 3. help text in `printUsage`,
 4. README usage examples if the command matters to normal workflow.
+
+If the command is part of pentest-swarm setup, also check:
+
+- `cmd/ah/pentest.go`
+- `README.md` pentest sections
+- the pentest-specific skill files under `.cursor/skills/`
 
 ## Documentation sync checklist
 

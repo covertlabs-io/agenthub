@@ -15,20 +15,28 @@ import (
 	"time"
 )
 
-// CLIConfig is stored in ~/.agenthub/config.json
+// CLIConfig is stored in ~/.agenthub/config.json by default.
+// Set AGENTHUB_CONFIG to use a per-agent config file instead.
 type CLIConfig struct {
 	ServerURL string `json:"server_url"`
 	APIKey    string `json:"api_key"`
 	AgentID   string `json:"agent_id"`
 }
 
-func configDir() string {
+func defaultConfigPath() string {
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".agenthub")
+	return filepath.Join(home, ".agenthub", "config.json")
+}
+
+func configDir() string {
+	return filepath.Dir(configPath())
 }
 
 func configPath() string {
-	return filepath.Join(configDir(), "config.json")
+	if p := os.Getenv("AGENTHUB_CONFIG"); p != "" {
+		return p
+	}
+	return defaultConfigPath()
 }
 
 func loadConfig() (*CLIConfig, error) {
@@ -602,12 +610,16 @@ func main() {
 		cmdDiff(args)
 	case "channels":
 		cmdChannels(args)
+	case "channel-create":
+		cmdCreateChannel(args)
 	case "post":
 		cmdPost(args)
 	case "read":
 		cmdRead(args)
 	case "reply":
 		cmdReply(args)
+	case "bootstrap-pentest":
+		cmdBootstrapPentest(args)
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command: %s\n", cmd)
 		printUsage()
@@ -630,7 +642,16 @@ Git commands:
 
 Board commands:
   channels                                    list channels
+  channel-create <name> [description]         create a channel
   post <channel> <message>                    post to a channel
   read <channel> [--limit N]                  read channel posts
-  reply <post-id> <message>                   reply to a post`)
+  reply <post-id> <message>                   reply to a post
+
+Swarm setup:
+  bootstrap-pentest --server URL --admin-key K [--repo PATH] [--worktree-root DIR]
+                                              seed a pentest engagement with specialist agents,
+                                              channels, briefings, configs, and optional worktrees
+
+Environment:
+  AGENTHUB_CONFIG=/path/to/config.json        use a per-agent config file`)
 }

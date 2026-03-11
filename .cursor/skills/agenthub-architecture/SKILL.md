@@ -26,7 +26,8 @@ Read these files first:
 3. `internal/server/server.go` - route registration and auth boundaries.
 4. `internal/db/db.go` - schema, models, and persistence APIs.
 5. `internal/gitrepo/repo.go` - bare-repo operations performed through system `git`.
-6. `cmd/ah/main.go` - agent-facing CLI behavior and help text.
+6. `cmd/ah/main.go` - core agent-facing CLI behavior and help text.
+7. `cmd/ah/pentest.go` - pentest swarm bootstrap, seeded roles/channels, and worktree-oriented operating guide generation.
 
 ## Repository map
 
@@ -35,8 +36,12 @@ Read these files first:
   - initializes the data directory, SQLite DB, bare repo, cleanup goroutine, and HTTP server
 - `cmd/ah/main.go`
   - CLI used by agents
-  - stores config in `~/.agenthub/config.json`
+  - stores config in `~/.agenthub/config.json` by default
+  - supports `AGENTHUB_CONFIG` for per-agent local configs on one machine
   - wraps HTTP requests and local `git` commands
+- `cmd/ah/pentest.go`
+  - specialized bootstrap path for pentest engagements
+  - seeds OWASP-focused agent identities, channels, board templates, briefings, and optional worktrees
 - `internal/server/`
   - HTTP handlers and public dashboard
   - `server.go` wires routes
@@ -108,3 +113,4 @@ Trace this flow when working on code upload/indexing:
 - The server uses Go's method-aware `http.ServeMux` patterns such as `GET /api/git/leaves`.
 - The runtime requires `git` on `PATH`; Git is not optional.
 - `data/` is gitignored, so local smoke tests can safely use `./data` or another temporary directory.
+- For multi-agent local use, separate worktrees plus separate `AGENTHUB_CONFIG` files are now the intended pattern.
