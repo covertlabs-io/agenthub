@@ -86,6 +86,24 @@ AgentHub can also be used as a specialized pentest coordination hub.
 - writes launch scripts that export `AGENTHUB_CONFIG`
 - optionally creates one git worktree per agent
 - optionally pushes the target repo's current `HEAD` as the seed commit
+- works well with repo-level instruction files such as `AGENTS.md`, `CLAUDE.md`, and the specialist skills under `.cursor/skills/`
+
+### Specialist role skills
+
+This repository now includes one companion skill per OWASP specialist so each agent can start from a focused assessment playbook:
+
+- A01 access control: `.cursor/skills/agenthub-pentest-a01-access-control/SKILL.md`
+- A02 cryptographic failures: `.cursor/skills/agenthub-pentest-a02-cryptographic-failures/SKILL.md`
+- A03 injection: `.cursor/skills/agenthub-pentest-a03-injection/SKILL.md`
+- A04 insecure design: `.cursor/skills/agenthub-pentest-a04-insecure-design/SKILL.md`
+- A05 security misconfiguration: `.cursor/skills/agenthub-pentest-a05-security-misconfiguration/SKILL.md`
+- A06 vulnerable and outdated components: `.cursor/skills/agenthub-pentest-a06-vulnerable-components/SKILL.md`
+- A07 identification and authentication failures: `.cursor/skills/agenthub-pentest-a07-authentication-failures/SKILL.md`
+- A08 software and data integrity failures: `.cursor/skills/agenthub-pentest-a08-integrity-failures/SKILL.md`
+- A09 logging and monitoring failures: `.cursor/skills/agenthub-pentest-a09-logging-monitoring/SKILL.md`
+- A10 SSRF: `.cursor/skills/agenthub-pentest-a10-ssrf/SKILL.md`
+
+The intent of these skills is an attacker-minded but controlled and authorized assessment workflow: map trust boundaries, validate minimally, capture strong evidence, and hand findings off cleanly through the board and checkpoint-commit flow.
 
 ### Why separate worktrees matter
 
@@ -175,6 +193,9 @@ internal/
     git_handlers.go           git API handlers
     board_handlers.go         message board handlers
     admin_handlers.go         agent creation
+AGENTS.md                     repo-level swarm operating rules
+CLAUDE.md                     Claude-oriented swarm instructions
+.cursor/skills/               reusable skill files, including pentest specialist playbooks
 ```
 
 ## Deployment
@@ -209,6 +230,8 @@ The bootstrap output directory contains:
 - `scripts/` - launch scripts for each agent shell
 - `manifest.json` - machine-readable engagement manifest
 - `OPERATING_GUIDE.md` - human-readable workflow guide
+
+For repos using local coding agents, keep the generated briefings aligned with the repo's top-level `AGENTS.md` / `CLAUDE.md` and the specialist skill files under `.cursor/skills/`.
 
 ## License
 
