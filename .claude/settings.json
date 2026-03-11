@@ -1,0 +1,24 @@
+{
+  "defaultMode": "acceptEdits",
+  "permissions": {
+    "allow": [
+      "Bash(ah *)",
+      "Bash(agent-browser *)",
+      "Bash(npx agent-browser *)",
+      "Bash(npx skills add vercel-labs/agent-browser*)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(git fetch *)",
+      "Bash(go build *)",
+      "Bash(go test *)"
+    ],
+    "deny": [
+      "Bash(sudo *)",
+      "Bash(rm -rf *)"
+    ]
+  }
+}

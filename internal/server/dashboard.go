@@ -15,6 +15,7 @@ type dashboardData struct {
 	Commits  []db.Commit
 	Channels []db.Channel
 	Posts    []db.PostWithChannel
+	Findings []db.Finding
 	Now      time.Time
 }
 
@@ -29,6 +30,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	commits, _ := s.db.ListCommits("", 50, 0)
 	channels, _ := s.db.ListChannels()
 	posts, _ := s.db.RecentPosts(100)
+	findings, _ := s.db.RecentFindings(20)
 
 	data := dashboardData{
 		Stats:    stats,
@@ -36,6 +38,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 		Commits:  commits,
 		Channels: channels,
 		Posts:    posts,
+		Findings: findings,
 		Now:      time.Now().UTC(),
 	}
 
@@ -98,7 +101,7 @@ var dashboardTmpl = template.Must(template.New("dashboard").Funcs(funcMap).Parse
   .container { max-width: 960px; margin: 0 auto; padding: 20px; }
   h1 { font-size: 20px; color: #fff; margin-bottom: 4px; }
   .subtitle { color: #666; font-size: 12px; margin-bottom: 24px; }
-  .stats { display: flex; gap: 24px; margin-bottom: 32px; }
+  .stats { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
   .stat { background: #141414; border: 1px solid #222; border-radius: 6px; padding: 12px 20px; }
   .stat-value { font-size: 24px; font-weight: bold; color: #fff; }
   .stat-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
@@ -117,6 +120,7 @@ var dashboardTmpl = template.Must(template.New("dashboard").Funcs(funcMap).Parse
   .reply-indicator { color: #555; font-size: 12px; }
   .empty { color: #444; font-style: italic; padding: 20px 0; }
   .parent-hash { color: #555; font-size: 12px; }
+  .severity { text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
 </style>
 </head>
 <body>
@@ -128,6 +132,9 @@ var dashboardTmpl = template.Must(template.New("dashboard").Funcs(funcMap).Parse
     <div class="stat"><div class="stat-value">{{.Stats.AgentCount}}</div><div class="stat-label">Agents</div></div>
     <div class="stat"><div class="stat-value">{{.Stats.CommitCount}}</div><div class="stat-label">Commits</div></div>
     <div class="stat"><div class="stat-value">{{.Stats.PostCount}}</div><div class="stat-label">Posts</div></div>
+    <div class="stat"><div class="stat-value">{{.Stats.FindingCount}}</div><div class="stat-label">Findings</div></div>
+    <div class="stat"><div class="stat-value">{{.Stats.ReproCount}}</div><div class="stat-label">Repros</div></div>
+    <div class="stat"><div class="stat-value">{{.Stats.ArtifactCount}}</div><div class="stat-label">Artifacts</div></div>
   </div>
 
   <h2>Commits</h2>
@@ -163,6 +170,26 @@ var dashboardTmpl = template.Must(template.New("dashboard").Funcs(funcMap).Parse
   {{end}}
   {{else}}
   <div class="empty">no posts yet</div>
+  {{end}}
+
+  <h2>Findings</h2>
+  {{if .Findings}}
+  <table>
+    <tr><th>ID</th><th>Bucket</th><th>Severity</th><th>Status</th><th>Title</th><th>Agent</th><th>When</th></tr>
+    {{range .Findings}}
+    <tr>
+      <td>#{{.ID}}</td>
+      <td>{{.OWASPBucket}}</td>
+      <td class="severity">{{.Severity}}</td>
+      <td>{{.Status}}</td>
+      <td>{{.Title}}</td>
+      <td class="agent">{{.AgentID}}</td>
+      <td class="time">{{timeago .UpdatedAt}}</td>
+    </tr>
+    {{end}}
+  </table>
+  {{else}}
+  <div class="empty">no findings yet</div>
   {{end}}
 
 </div>

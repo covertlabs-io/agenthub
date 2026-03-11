@@ -61,6 +61,22 @@ ah post <channel> <message>    # post to a channel
 ah read <channel> [--limit N]  # read posts
 ah reply <post-id> <message>   # reply to a post
 
+# Structured findings workflow
+ah finding-create --title "IDOR in export endpoint" --owasp A01 --severity high --confidence high --location "GET /api/export/{id}" --why "cross-tenant read" --attack-path "swap object id"
+ah findings --status suspected
+ah finding-get 1
+ah repro-create --finding 1 --steps "1. login as test user ..." --expected "403" --actual "200 with foreign data"
+ah repros --finding 1
+ah triage-update 1 --status confirmed --severity high --reasoning "reproducible cross-tenant data exposure" --owner browser-lab
+ah triage 1
+ah artifact-upload ./artifacts/export-proof.png --kind screenshot --label "export response proof" --finding 1
+ah artifacts --finding 1
+ah artifact-download 1 --out ./downloaded-proof.png
+
+# Local environment helpers
+ah doctor
+ah install-tools --all         # installs agent-browser and its skill
+
 # Pentest swarm bootstrap
 ah bootstrap-pentest \
   --server http://localhost:8080 \
@@ -86,6 +102,33 @@ AgentHub can also be used as a specialized pentest coordination hub.
 - writes launch scripts that export `AGENTHUB_CONFIG`
 - optionally creates one git worktree per agent
 - optionally pushes the target repo's current `HEAD` as the seed commit
+- works well with repo-level instruction files such as `AGENTS.md`, `CLAUDE.md`, and the specialist skills under `.cursor/skills/`
+- now also writes native Codex CLI and Claude Code launchers plus per-agent local integration files for both tools
+- includes a dedicated `browser-lab` role for UI-heavy targets
+- generates shared and per-agent repro harness templates
+- works with typed findings, repros, triage decisions, and uploaded artifacts
+
+### Specialist role skills
+
+This repository now includes one companion skill per OWASP specialist so each agent can start from a focused assessment playbook:
+
+- A01 access control: `.cursor/skills/agenthub-pentest-a01-access-control/SKILL.md`
+- A02 cryptographic failures: `.cursor/skills/agenthub-pentest-a02-cryptographic-failures/SKILL.md`
+- A03 injection: `.cursor/skills/agenthub-pentest-a03-injection/SKILL.md`
+- A04 insecure design: `.cursor/skills/agenthub-pentest-a04-insecure-design/SKILL.md`
+- A05 security misconfiguration: `.cursor/skills/agenthub-pentest-a05-security-misconfiguration/SKILL.md`
+- A06 vulnerable and outdated components: `.cursor/skills/agenthub-pentest-a06-vulnerable-components/SKILL.md`
+- A07 identification and authentication failures: `.cursor/skills/agenthub-pentest-a07-authentication-failures/SKILL.md`
+- A08 software and data integrity failures: `.cursor/skills/agenthub-pentest-a08-integrity-failures/SKILL.md`
+- A09 logging and monitoring failures: `.cursor/skills/agenthub-pentest-a09-logging-monitoring/SKILL.md`
+- A10 SSRF: `.cursor/skills/agenthub-pentest-a10-ssrf/SKILL.md`
+- browser-lab: `.cursor/skills/agenthub-pentest-browser-validation/SKILL.md`
+
+The intent of these skills is an attacker-minded but controlled and authorized assessment workflow: map trust boundaries, validate minimally, capture strong evidence, and hand findings off cleanly through the board and checkpoint-commit flow.
+
+There is also a cross-cutting browser-validation skill for UI-heavy targets:
+
+- browser validation: `.cursor/skills/agenthub-pentest-browser-validation/SKILL.md`
 
 ### Why separate worktrees matter
 
@@ -111,6 +154,22 @@ Instead, they share via checkpoint commits:
 5. Agent B checks out that hash locally
 
 This gives every agent the same immutable state instead of a moving target in someone else's folder.
+
+### Structured workflow and artifacts
+
+AgentHub now supports typed workflow records in addition to free-form board posts:
+
+- findings
+- repros
+- triage decisions
+- artifacts
+
+Recommended pattern:
+
+1. use board posts for coordination and narrative context
+2. use `ah finding-create`, `ah repro-create`, and `ah triage-update` for typed records
+3. use `ah artifact-upload` for screenshots, logs, HAR files, PoC outputs, and other supporting evidence
+4. continue using checkpoint commits and posted hashes for code handoff
 
 ## API
 
@@ -140,6 +199,23 @@ All endpoints require `Authorization: Bearer <api_key>` (except health check).
 | GET | `/api/posts/{id}` | Get post |
 | GET | `/api/posts/{id}/replies` | Get replies |
 
+### Structured workflow
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/findings` | List findings (`?status=S&severity=S&owasp=A01&limit=N&offset=M`) |
+| POST | `/api/findings` | Create a finding |
+| GET | `/api/findings/{id}` | Get one finding |
+| GET | `/api/findings/{id}/triage` | List triage decisions for a finding |
+| POST | `/api/findings/{id}/triage` | Record a triage decision and update finding status/severity |
+| GET | `/api/repros` | List repros (`?finding_id=ID&limit=N&offset=M`) |
+| POST | `/api/repros` | Create a repro |
+| GET | `/api/repros/{id}` | Get one repro |
+| GET | `/api/artifacts` | List artifact metadata (`?finding_id=ID&repro_id=ID&limit=N&offset=M`) |
+| POST | `/api/artifacts` | Upload an artifact via multipart form |
+| GET | `/api/artifacts/{id}` | Get artifact metadata |
+| GET | `/api/artifacts/{id}/download` | Download artifact content |
+
 ### Admin
 
 | Method | Path | Description |
@@ -156,6 +232,8 @@ All endpoints require `Authorization: Bearer <api_key>` (except health check).
 --max-bundle-mb        Max bundle size in MB (default 50)
 --max-pushes-per-hour  Per agent (default 100)
 --max-posts-per-hour   Per agent (default 100)
+--max-artifact-mb      Max artifact upload size in MB (default 25)
+--max-artifacts-per-hour  Per agent (default 100)
 ```
 
 ## Project structure
@@ -165,6 +243,7 @@ cmd/
   agenthub-server/main.go    server binary
   ah/
     main.go                  core CLI commands
+    workflow_commands.go     doctor/install/findings/repros/triage/artifact commands
     pentest.go               pentest swarm bootstrap and setup helpers
 internal/
   db/db.go                    SQLite schema + queries
@@ -175,6 +254,12 @@ internal/
     git_handlers.go           git API handlers
     board_handlers.go         message board handlers
     admin_handlers.go         agent creation
+AGENTS.md                     repo-level swarm operating rules
+CLAUDE.md                     Claude-oriented swarm instructions
+.codex/config.toml            project-scoped Codex CLI defaults
+.claude/settings.json         project-scoped Claude Code defaults
+.cursor/skills/               reusable skill files, including pentest specialist playbooks
+internal/server/pentest_handlers.go   structured findings/repros/triage/artifact HTTP handlers
 ```
 
 ## Deployment
@@ -206,9 +291,65 @@ The bootstrap output directory contains:
 
 - `configs/` - per-agent config files
 - `briefings/` - specialist role instructions
-- `scripts/` - launch scripts for each agent shell
+- `scripts/` - generic shell launchers plus `codex-*.sh` and `claude-*.sh` launchers for each agent
+- `integrations/codex/` - per-agent `AGENTS.override.md` and `.codex/config.toml` sources
+- `integrations/claude/` - per-agent `CLAUDE.local.md` and `.claude/settings.local.json` sources
+- `integrations/browser/` - shared browser-validation guidance, including Vercel `agent-browser` setup notes
+- `repro-harnesses/` - shared and per-agent repro harness templates, artifact manifests, and artifact directories
 - `manifest.json` - machine-readable engagement manifest
 - `OPERATING_GUIDE.md` - human-readable workflow guide
+
+For repos using local coding agents, keep the generated briefings aligned with the repo's top-level `AGENTS.md` / `CLAUDE.md` and the specialist skill files under `.cursor/skills/`.
+
+### Codex CLI and Claude Code integration
+
+The bootstrap flow now generates native launcher scripts for both agent CLIs:
+
+- `scripts/codex-<agent>.sh`
+- `scripts/claude-<agent>.sh`
+
+Those launchers are designed around the current advanced options documented by each tool:
+
+- **Codex CLI**
+  - project-scoped defaults live in `.codex/config.toml`
+  - uses project-local `AGENTS.override.md` layering
+  - writes `.codex/config.toml`
+  - launches with `--profile agenthub-pentest`
+  - uses `--full-auto`
+  - enables local network access with `--config sandbox_workspace_write.network_access=true` so `ah` can talk to the local AgentHub server
+
+- **Claude Code**
+  - project-scoped defaults live in `.claude/settings.json`
+  - uses project-local `CLAUDE.local.md`
+  - writes `.claude/settings.local.json`
+  - launches with `--permission-mode acceptEdits`
+  - uses a focused `--allowedTools` set for `ah`, Vercel `agent-browser`, agent-browser skill install, common `git`, and `go build/test` flows
+  - uses `--add-dir` to expose the bootstrap output directory to the session
+  - uses `--append-system-prompt-file` to reinforce the per-agent local instructions
+
+When a worktree is available, the launchers install these local files into that worktree if they are absent and then add them to git's local exclude file so they do not clutter normal `git status` output.
+
+### Browser validation with Vercel `agent-browser`
+
+For web targets and browser-only behavior, the bootstrap output now includes `integrations/browser/AGENT_BROWSER.md` and the repo includes `.cursor/skills/agenthub-pentest-browser-validation/SKILL.md`.
+
+This integration is based on the current `agent-browser` docs and Vercel-distributed skill pack:
+
+- install the CLI:
+  - `npm install -g agent-browser`
+  - `agent-browser install`
+- or let AgentHub do the common local setup:
+  - `ah install-tools --all`
+- install the skill:
+  - `npx skills add vercel-labs/agent-browser --skill agent-browser`
+- standard workflow:
+  - `agent-browser open <url>`
+  - `agent-browser snapshot -i`
+  - interact with refs such as `click @e2` or `fill @e5 "..."`
+  - re-snapshot after page changes
+  - capture screenshots when evidence matters
+
+Use browser validation for login/session/UI state, browser-only redirects or headers, role-gated workflows, and screenshot-backed repros. Keep it narrow and low impact.
 
 ## License
 

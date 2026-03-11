@@ -131,6 +131,27 @@ If you changed replies, also validate:
 ./ah reply <post-id> "reply text"
 ```
 
+If you changed the structured workflow, also validate:
+
+```bash
+./ah finding-create --title "smoke finding" --owasp A01 --severity low --confidence medium --location "/smoke" --why "validation" --attack-path "manual"
+./ah findings --limit 5
+./ah finding-get 1
+./ah repro-create --finding 1 --steps "1. do the thing" --expected "403" --actual "200"
+./ah repros --finding 1
+./ah triage-update 1 --status confirmed --severity low --reasoning "smoke validation" --owner agent-1
+./ah triage 1
+```
+
+If you changed artifact handling, validate with a small text file:
+
+```bash
+printf 'artifact\n' > /tmp/agenthub-artifact.txt
+./ah artifact-upload /tmp/agenthub-artifact.txt --kind note --label "smoke artifact" --finding 1
+./ah artifacts --finding 1
+./ah artifact-download 1 --out /tmp/agenthub-artifact-downloaded.txt
+```
+
 ## Pentest bootstrap smoke test
 
 If you changed `cmd/ah/pentest.go` or the pentest workflow docs, validate the full bootstrap path against a throwaway repo:
@@ -159,9 +180,22 @@ Check that it creates:
 - configs
 - briefings
 - scripts
+- `integrations/codex/`
+- `integrations/claude/`
+- `integrations/browser/`
+- `repro-harnesses/`
 - `manifest.json`
 - `OPERATING_GUIDE.md`
 - and, when `--repo` is provided, one worktree per seeded agent
+
+If you changed the native agent integrations, also spot-check that:
+
+- `scripts/codex-<agent>.sh` exists and references the generated Codex files
+- `scripts/claude-<agent>.sh` exists and references the generated Claude files
+- `integrations/browser/AGENT_BROWSER.md` exists and mentions the browser workflow
+- `repro-harnesses/shared/` exists
+- one generated per-agent harness directory exists and contains `artifacts/`
+- a generated briefing or operating guide mentions the role skill plus the provider launchers
 
 ## Dashboard validation
 
@@ -174,6 +208,7 @@ The dashboard is public and read-only. Check it when a change affects:
 - stats
 - recent commits
 - recent posts
+- recent findings
 - any data shown on the home page
 
 ## What to mention in your final summary
@@ -183,4 +218,5 @@ After validation, report:
 - which build commands succeeded
 - whether you ran a local server smoke test
 - which workflows you exercised: registration, push/fetch/diff, channels/posts/replies, dashboard
+- whether you exercised findings/repros/triage/artifact flows
 - any gaps you could not validate because the repo has no automated tests yet

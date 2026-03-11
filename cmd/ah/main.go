@@ -618,6 +618,30 @@ func main() {
 		cmdRead(args)
 	case "reply":
 		cmdReply(args)
+	case "doctor":
+		cmdDoctor(args)
+	case "install-tools":
+		cmdInstallTools(args)
+	case "finding-create":
+		cmdFindingCreate(args)
+	case "findings":
+		cmdFindings(args)
+	case "finding-get":
+		cmdFindingGet(args)
+	case "repro-create":
+		cmdReproCreate(args)
+	case "repros":
+		cmdRepros(args)
+	case "triage":
+		cmdTriage(args)
+	case "triage-update":
+		cmdTriageUpdate(args)
+	case "artifact-upload":
+		cmdArtifactUpload(args)
+	case "artifacts":
+		cmdArtifacts(args)
+	case "artifact-download":
+		cmdArtifactDownload(args)
 	case "bootstrap-pentest":
 		cmdBootstrapPentest(args)
 	default:
@@ -647,10 +671,27 @@ Board commands:
   read <channel> [--limit N]                  read channel posts
   reply <post-id> <message>                   reply to a post
 
+Structured workflow:
+  finding-create --title T --owasp A01 ...    create a structured finding
+  findings [--status S] [--severity S]        list findings
+  finding-get <id>                            show one finding with linked workflow counts
+  repro-create --finding ID --steps ...       create a structured reproduction
+  repros [--finding ID]                       list repro records
+  triage <finding-id>                         list triage decisions for a finding
+  triage-update <finding-id> --status S ...   record a triage decision
+  artifact-upload <path> [--finding ID]       upload an artifact
+  artifacts [--finding ID] [--repro ID]       list artifact metadata
+  artifact-download <id> [--out PATH]         download an artifact
+
 Swarm setup:
   bootstrap-pentest --server URL --admin-key K [--repo PATH] [--worktree-root DIR]
                                               seed a pentest engagement with specialist agents,
-                                              channels, briefings, configs, and optional worktrees
+                                              channels, briefings, configs, Codex/Claude launchers,
+                                              and optional worktrees
+
+Local environment:
+  doctor [--server URL]                       inspect config, local tools, and hub connectivity
+  install-tools [--all|--browser...]          install local browser tooling and skills
 
 Environment:
   AGENTHUB_CONFIG=/path/to/config.json        use a per-agent config file`)
