@@ -650,7 +650,8 @@ Board commands:
 Swarm setup:
   bootstrap-pentest --server URL --admin-key K [--repo PATH] [--worktree-root DIR]
                                               seed a pentest engagement with specialist agents,
-                                              channels, briefings, configs, and optional worktrees
+                                              channels, briefings, configs, Codex/Claude launchers,
+                                              and optional worktrees
 
 Environment:
   AGENTHUB_CONFIG=/path/to/config.json        use a per-agent config file`)

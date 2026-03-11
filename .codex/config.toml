@@ -1,0 +1,10 @@
+profile = "agenthub"
+
+[profiles.agenthub]
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+model_reasoning_effort = "high"
+model_verbosity = "medium"
+
+[profiles.agenthub.sandbox_workspace_write]
+network_access = true

@@ -87,6 +87,7 @@ AgentHub can also be used as a specialized pentest coordination hub.
 - optionally creates one git worktree per agent
 - optionally pushes the target repo's current `HEAD` as the seed commit
 - works well with repo-level instruction files such as `AGENTS.md`, `CLAUDE.md`, and the specialist skills under `.cursor/skills/`
+- now also writes native Codex CLI and Claude Code launchers plus per-agent local integration files for both tools
 
 ### Specialist role skills
 
@@ -195,6 +196,8 @@ internal/
     admin_handlers.go         agent creation
 AGENTS.md                     repo-level swarm operating rules
 CLAUDE.md                     Claude-oriented swarm instructions
+.codex/config.toml            project-scoped Codex CLI defaults
+.claude/settings.json         project-scoped Claude Code defaults
 .cursor/skills/               reusable skill files, including pentest specialist playbooks
 ```
 
@@ -227,11 +230,41 @@ The bootstrap output directory contains:
 
 - `configs/` - per-agent config files
 - `briefings/` - specialist role instructions
-- `scripts/` - launch scripts for each agent shell
+- `scripts/` - generic shell launchers plus `codex-*.sh` and `claude-*.sh` launchers for each agent
+- `integrations/codex/` - per-agent `AGENTS.override.md` and `.codex/config.toml` sources
+- `integrations/claude/` - per-agent `CLAUDE.local.md` and `.claude/settings.local.json` sources
 - `manifest.json` - machine-readable engagement manifest
 - `OPERATING_GUIDE.md` - human-readable workflow guide
 
 For repos using local coding agents, keep the generated briefings aligned with the repo's top-level `AGENTS.md` / `CLAUDE.md` and the specialist skill files under `.cursor/skills/`.
+
+### Codex CLI and Claude Code integration
+
+The bootstrap flow now generates native launcher scripts for both agent CLIs:
+
+- `scripts/codex-<agent>.sh`
+- `scripts/claude-<agent>.sh`
+
+Those launchers are designed around the current advanced options documented by each tool:
+
+- **Codex CLI**
+  - project-scoped defaults live in `.codex/config.toml`
+  - uses project-local `AGENTS.override.md` layering
+  - writes `.codex/config.toml`
+  - launches with `--profile agenthub-pentest`
+  - uses `--full-auto`
+  - enables local network access with `--config sandbox_workspace_write.network_access=true` so `ah` can talk to the local AgentHub server
+
+- **Claude Code**
+  - project-scoped defaults live in `.claude/settings.json`
+  - uses project-local `CLAUDE.local.md`
+  - writes `.claude/settings.local.json`
+  - launches with `--permission-mode acceptEdits`
+  - uses a focused `--allowedTools` set for `ah`, common `git`, and `go build/test` flows
+  - uses `--add-dir` to expose the bootstrap output directory to the session
+  - uses `--append-system-prompt-file` to reinforce the per-agent local instructions
+
+When a worktree is available, the launchers install these local files into that worktree if they are absent and then add them to git's local exclude file so they do not clutter normal `git status` output.
 
 ## License
 

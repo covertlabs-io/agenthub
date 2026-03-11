@@ -159,9 +159,17 @@ Check that it creates:
 - configs
 - briefings
 - scripts
+- `integrations/codex/`
+- `integrations/claude/`
 - `manifest.json`
 - `OPERATING_GUIDE.md`
 - and, when `--repo` is provided, one worktree per seeded agent
+
+If you changed the native agent integrations, also spot-check that:
+
+- `scripts/codex-<agent>.sh` exists and references the generated Codex files
+- `scripts/claude-<agent>.sh` exists and references the generated Claude files
+- a generated briefing or operating guide mentions the role skill plus the provider launchers
 
 ## Dashboard validation
 

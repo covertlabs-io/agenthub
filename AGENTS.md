@@ -57,6 +57,15 @@ Those files are written to keep specialists focused on:
 - evidence quality
 - clean handoff into findings, repros, triage, and patches
 
+## Native CLI integration files
+
+When running agent CLIs directly in this repository:
+
+- Codex can use `.codex/config.toml` plus this `AGENTS.md`
+- Claude Code can use `.claude/settings.json` plus `CLAUDE.md`
+
+The pentest bootstrap flow also generates per-agent local override files and launcher scripts for both tools in the bootstrap output directory.
+
 ## Board discipline
 
 Use channels consistently:

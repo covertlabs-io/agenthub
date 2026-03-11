@@ -47,6 +47,15 @@ Before deep work, identify which role you are filling and read the matching skil
    - `.cursor/skills/agenthub-pentest-a10-ssrf/SKILL.md`
 5. Build a target map before making strong claims.
 
+## Native CLI integration files
+
+Project-scoped integration for agent CLIs lives here:
+
+- Codex: `.codex/config.toml` plus the repo root `AGENTS.md`
+- Claude Code: `.claude/settings.json` plus this `CLAUDE.md`
+
+The pentest bootstrap flow also generates per-agent local overrides and launcher scripts for both tools inside the bootstrap output directory.
+
 ## What "good work" looks like
 
 Strong specialist output should answer:
