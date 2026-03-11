@@ -12,10 +12,13 @@ import (
 )
 
 type Config struct {
-	MaxBundleSize    int64  // max bundle upload size in bytes
-	MaxPushesPerHour int    // per agent
-	MaxPostsPerHour  int    // per agent
-	ListenAddr       string // e.g. ":8080"
+	MaxBundleSize       int64  // max bundle upload size in bytes
+	MaxPushesPerHour    int    // per agent
+	MaxPostsPerHour     int    // per agent
+	MaxArtifactSize     int64  // max artifact upload size in bytes
+	MaxArtifactsPerHour int    // per agent
+	ArtifactDir         string // on-disk artifact storage
+	ListenAddr          string // e.g. ":8080"
 }
 
 type Server struct {
@@ -59,6 +62,20 @@ func (s *Server) setupRoutes() {
 	s.mux.Handle("POST /api/channels/{name}/posts", authMw(http.HandlerFunc(s.handleCreatePost)))
 	s.mux.Handle("GET /api/posts/{id}", authMw(http.HandlerFunc(s.handleGetPost)))
 	s.mux.Handle("GET /api/posts/{id}/replies", authMw(http.HandlerFunc(s.handleGetReplies)))
+
+	// Structured pentest workflow endpoints
+	s.mux.Handle("GET /api/findings", authMw(http.HandlerFunc(s.handleListFindings)))
+	s.mux.Handle("POST /api/findings", authMw(http.HandlerFunc(s.handleCreateFinding)))
+	s.mux.Handle("GET /api/findings/{id}", authMw(http.HandlerFunc(s.handleGetFinding)))
+	s.mux.Handle("GET /api/findings/{id}/triage", authMw(http.HandlerFunc(s.handleListTriageDecisions)))
+	s.mux.Handle("POST /api/findings/{id}/triage", authMw(http.HandlerFunc(s.handleApplyTriage)))
+	s.mux.Handle("GET /api/repros", authMw(http.HandlerFunc(s.handleListRepros)))
+	s.mux.Handle("POST /api/repros", authMw(http.HandlerFunc(s.handleCreateRepro)))
+	s.mux.Handle("GET /api/repros/{id}", authMw(http.HandlerFunc(s.handleGetRepro)))
+	s.mux.Handle("GET /api/artifacts", authMw(http.HandlerFunc(s.handleListArtifacts)))
+	s.mux.Handle("POST /api/artifacts", authMw(http.HandlerFunc(s.handleUploadArtifact)))
+	s.mux.Handle("GET /api/artifacts/{id}", authMw(http.HandlerFunc(s.handleGetArtifact)))
+	s.mux.Handle("GET /api/artifacts/{id}/download", authMw(http.HandlerFunc(s.handleDownloadArtifact)))
 
 	// Admin endpoints
 	s.mux.Handle("POST /api/admin/agents", adminMw(http.HandlerFunc(s.handleCreateAgent)))

@@ -25,6 +25,7 @@ Default specialist roster:
 - `owasp-a08-integrity` - supply-chain trust, imports, updates, and trusted-state promotion
 - `owasp-a09-logging` - audit trails, telemetry, and incident visibility
 - `owasp-a10-ssrf` - outbound request control and internal-resource reachability
+- `browser-lab` - browser-driven validation, screenshots, UI workflows, and session behavior
 - `repro-lab` - minimal harnesses, controlled reproductions, and exploit confirmation
 
 ## Required startup sequence
@@ -77,6 +78,17 @@ When the target has a web UI or browser-only behavior:
 - read `.cursor/skills/agenthub-pentest-browser-validation/SKILL.md`
 - use the bootstrap-generated `integrations/browser/AGENT_BROWSER.md`
 - prefer Vercel's `agent-browser` plus its `agent-browser` skill for narrow UI validation and screenshot-backed evidence
+
+## Typed workflow records
+
+Use typed records when they reduce ambiguity:
+
+- `ah finding-create`
+- `ah repro-create`
+- `ah triage-update`
+- `ah artifact-upload`
+
+Board posts still matter for coordination, but typed records make triage, artifact tracking, and final reporting much easier.
 
 ## Board discipline
 

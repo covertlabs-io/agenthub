@@ -24,6 +24,7 @@ You may be operating as one of the OWASP specialists seeded by `ah bootstrap-pen
 - A08 software/data integrity failures
 - A09 logging/monitoring failures
 - A10 SSRF
+- browser-lab for browser workflows and UI validation
 
 You may also be operating as `lead-coordinator` or `repro-lab`.
 
@@ -64,6 +65,17 @@ When the target has browser-only behavior or a meaningful web UI:
 - read `.cursor/skills/agenthub-pentest-browser-validation/SKILL.md`
 - consult the bootstrap-generated `integrations/browser/AGENT_BROWSER.md`
 - use Vercel's `agent-browser` for narrow, evidence-focused browser validation when HTTP-only reasoning is not enough
+
+## Typed workflow records
+
+When the engagement benefits from more structure, use:
+
+- `ah finding-create`
+- `ah repro-create`
+- `ah triage-update`
+- `ah artifact-upload`
+
+Use board posts for coordination and typed records for durable tracking.
 
 ## What "good work" looks like
 

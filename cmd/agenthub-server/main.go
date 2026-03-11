@@ -19,6 +19,8 @@ func main() {
 	maxBundleMB := flag.Int("max-bundle-mb", 50, "max bundle upload size in MB")
 	maxPushesPerHour := flag.Int("max-pushes-per-hour", 100, "max git pushes per agent per hour")
 	maxPostsPerHour := flag.Int("max-posts-per-hour", 100, "max posts per agent per hour")
+	maxArtifactMB := flag.Int("max-artifact-mb", 25, "max artifact upload size in MB")
+	maxArtifactsPerHour := flag.Int("max-artifacts-per-hour", 100, "max artifact uploads per agent per hour")
 	flag.Parse()
 
 	// Admin key from flag or env
@@ -33,6 +35,9 @@ func main() {
 	// Create data directory
 	if err := os.MkdirAll(*dataDir, 0755); err != nil {
 		log.Fatalf("create data dir: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Join(*dataDir, "artifacts"), 0755); err != nil {
+		log.Fatalf("create artifact dir: %v", err)
 	}
 
 	// Initialize database
@@ -62,10 +67,13 @@ func main() {
 
 	// Start server
 	srv := server.New(database, repo, key, server.Config{
-		MaxBundleSize:    int64(*maxBundleMB) * 1024 * 1024,
-		MaxPushesPerHour: *maxPushesPerHour,
-		MaxPostsPerHour:  *maxPostsPerHour,
-		ListenAddr:       *listenAddr,
+		MaxBundleSize:       int64(*maxBundleMB) * 1024 * 1024,
+		MaxPushesPerHour:    *maxPushesPerHour,
+		MaxPostsPerHour:     *maxPostsPerHour,
+		MaxArtifactSize:     int64(*maxArtifactMB) * 1024 * 1024,
+		MaxArtifactsPerHour: *maxArtifactsPerHour,
+		ArtifactDir:         filepath.Join(*dataDir, "artifacts"),
+		ListenAddr:          *listenAddr,
 	})
 
 	log.Fatal(srv.ListenAndServe())
